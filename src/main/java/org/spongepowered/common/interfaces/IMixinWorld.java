@@ -33,9 +33,8 @@ import org.spongepowered.api.block.tileentity.TileEntity;
 import org.spongepowered.api.data.Transaction;
 import org.spongepowered.api.entity.Entity;
 import org.spongepowered.api.event.cause.Cause;
-import org.spongepowered.api.world.gen.GeneratorPopulator;
-import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.common.configuration.SpongeConfig;
+import org.spongepowered.common.world.gen.SpongeChunkProvider;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,10 +42,6 @@ import java.util.Optional;
 public interface IMixinWorld {
 
     SpongeConfig<SpongeConfig.WorldConfig> getWorldConfig();
-
-    ImmutableList<Populator> getPopulators();
-
-    ImmutableList<GeneratorPopulator> getGeneratorPopulators();
 
     List<BlockSnapshot> getBlockBreakList();
 
@@ -75,6 +70,8 @@ public interface IMixinWorld {
     Optional<TileEntity> getCurrentTickTileEntity();
 
     void updateWorldGenerator();
+    
+    SpongeChunkProvider getSpongeChunkProvider();
 
     void handlePostTickCaptures(Cause cause);
 

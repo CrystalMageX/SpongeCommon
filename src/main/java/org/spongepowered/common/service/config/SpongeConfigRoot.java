@@ -60,7 +60,7 @@ public class SpongeConfigRoot implements ConfigRoot {
     @Override
     public ConfigurationLoader<CommentedConfigurationNode> getConfig() {
         return HoconConfigurationLoader.builder()
-                .setPath(getConfigPath())
+                .setFile(getConfigPath().toFile())
                 .build();
     }
 

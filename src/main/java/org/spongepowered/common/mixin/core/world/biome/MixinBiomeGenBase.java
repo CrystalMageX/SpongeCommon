@@ -24,27 +24,313 @@
  */
 package org.spongepowered.common.mixin.core.world.biome;
 
+import net.minecraft.block.BlockStone;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.BiomeGenMutated;
+import net.minecraft.world.gen.ChunkProviderSettings;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.block.BlockState;
+import org.spongepowered.api.data.type.PlantTypes;
+import org.spongepowered.api.data.type.ShrubTypes;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
+import org.spongepowered.api.util.weighted.ChanceTable;
+import org.spongepowered.api.util.weighted.EmptyObject;
+import org.spongepowered.api.util.weighted.SeededVariableAmount;
+import org.spongepowered.api.util.weighted.VariableAmount;
+import org.spongepowered.api.util.weighted.WeightedObject;
+import org.spongepowered.api.world.biome.BiomeGenerationSettings;
 import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.biome.GroundCoverLayer;
 import org.spongepowered.api.world.gen.Populator;
+import org.spongepowered.api.world.gen.PopulatorFactory;
+import org.spongepowered.api.world.gen.populator.BigMushroom;
+import org.spongepowered.api.world.gen.populator.Cactus;
+import org.spongepowered.api.world.gen.populator.DeadBush;
+import org.spongepowered.api.world.gen.populator.Flower;
+import org.spongepowered.api.world.gen.populator.Forest;
+import org.spongepowered.api.world.gen.populator.Mushroom;
+import org.spongepowered.api.world.gen.populator.Ore;
+import org.spongepowered.api.world.gen.populator.Pumpkin;
+import org.spongepowered.api.world.gen.populator.RandomBlock;
+import org.spongepowered.api.world.gen.populator.Reed;
+import org.spongepowered.api.world.gen.populator.SeaFloor;
+import org.spongepowered.api.world.gen.populator.Shrub;
+import org.spongepowered.api.world.gen.populator.WaterLily;
+import org.spongepowered.api.world.gen.type.BiomeTreeTypes;
+import org.spongepowered.api.world.gen.type.MushroomType;
+import org.spongepowered.api.world.gen.type.MushroomTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.interfaces.gen.IBiomeGenBase;
+import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
+import org.spongepowered.common.world.gen.NoiseGroundCoverDepth;
+import org.spongepowered.common.world.gen.WorldGenConstants;
+import org.spongepowered.common.world.gen.populators.RandomBlockPopulator;
 
 @NonnullByDefault
 @Mixin(BiomeGenBase.class)
-public abstract class MixinBiomeGenBase implements BiomeType {
+public abstract class MixinBiomeGenBase implements BiomeType, IBiomeGenBase {
 
     @Shadow public String biomeName;
     @Shadow public float temperature;
     @Shadow public float rainfall;
     @Shadow public float minHeight;
     @Shadow public float maxHeight;
+    @Shadow public IBlockState topBlock;
+    @Shadow public IBlockState fillerBlock;
+    @Shadow public BiomeDecorator theBiomeDecorator;
 
-    private final List<Populator> populators = new ArrayList<>();
+    @Inject(method = "<init>(IZ)V", at = @At("RETURN") )
+    private void onConstructed(int id, boolean register, CallbackInfo ci) {
+    }
+
+    @Override
+    public BiomeGenerationSettings initPopulators(World world) {
+        SpongeBiomeGenerationSettings gensettings = new SpongeBiomeGenerationSettings();
+        gensettings.getPopulators().clear();
+        gensettings.getGenerationPopulators().clear();
+        gensettings.getGroundCoverLayers().clear();
+        buildPopulators(world, gensettings);
+//        System.out.println("Initialized " + getName());
+//        for (Populator pop : gensettings.getPopulators()) {
+//            System.out.println("\t" + pop.toString());
+//        }
+        return gensettings;
+    }
+
+    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+        BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;
+        if (BiomeGenMutated.class.isAssignableFrom(this.getClass())) {
+            theBiomeDecorator = ((BiomeGenMutated) (Object) this).baseBiome.theBiomeDecorator;
+        }
+
+        gensettings.getGroundCoverLayers().add(new GroundCoverLayer((BlockState) this.topBlock, SeededVariableAmount.fixed(1)));
+        gensettings.getGroundCoverLayers().add(new GroundCoverLayer((BlockState) this.fillerBlock, new NoiseGroundCoverDepth()));
+
+        PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
+
+        String s = world.getWorldInfo().getGeneratorOptions();
+        ChunkProviderSettings settings;
+        if (s != null) {
+            settings = ChunkProviderSettings.Factory.jsonToFactory(s).func_177864_b();
+        } else {
+            settings = ChunkProviderSettings.Factory.jsonToFactory("").func_177864_b();
+        }
+
+        Ore dirt = factory.createOrePopulator()
+                .ore((BlockState) Blocks.dirt.getDefaultState())
+                .size(settings.dirtSize)
+                .perChunk(settings.dirtCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.dirtMinHeight, settings.dirtMaxHeight))
+                .build();
+        gensettings.getPopulators().add(dirt);
+
+        Ore gravel = factory.createOrePopulator()
+                .ore((BlockState) Blocks.gravel.getDefaultState())
+                .size(settings.gravelSize)
+                .perChunk(settings.gravelCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.gravelMinHeight, settings.gravelMaxHeight))
+                .build();
+        gensettings.getPopulators().add(gravel);
+
+        Ore diorite = factory.createOrePopulator()
+                .ore((BlockState) Blocks.stone.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.DIORITE))
+                .size(settings.dioriteSize)
+                .perChunk(settings.dioriteCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.dioriteMinHeight, settings.dioriteMaxHeight))
+                .build();
+        gensettings.getPopulators().add(diorite);
+
+        Ore granite = factory.createOrePopulator()
+                .ore((BlockState) Blocks.stone.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.GRANITE))
+                .size(settings.graniteSize)
+                .perChunk(settings.graniteCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.graniteMinHeight, settings.graniteMaxHeight))
+                .build();
+        gensettings.getPopulators().add(granite);
+
+        Ore andesite = factory.createOrePopulator()
+                .ore((BlockState) Blocks.stone.getDefaultState().withProperty(BlockStone.VARIANT, BlockStone.EnumType.ANDESITE))
+                .size(settings.andesiteSize)
+                .perChunk(settings.andesiteCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.andesiteMinHeight, settings.andesiteMaxHeight))
+                .build();
+        gensettings.getPopulators().add(andesite);
+
+        Ore coal = factory.createOrePopulator()
+                .ore((BlockState) Blocks.coal_ore.getDefaultState())
+                .size(settings.coalSize)
+                .perChunk(settings.coalCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.coalMinHeight, settings.coalMaxHeight))
+                .build();
+        gensettings.getPopulators().add(coal);
+
+        Ore iron = factory.createOrePopulator()
+                .ore((BlockState) Blocks.iron_ore.getDefaultState())
+                .size(settings.ironSize)
+                .perChunk(settings.ironCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.ironMinHeight, settings.ironMaxHeight))
+                .build();
+        gensettings.getPopulators().add(iron);
+
+        Ore gold = factory.createOrePopulator()
+                .ore((BlockState) Blocks.gold_ore.getDefaultState())
+                .size(settings.goldSize)
+                .perChunk(settings.goldCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.goldMinHeight, settings.goldMaxHeight))
+                .build();
+        gensettings.getPopulators().add(gold);
+
+        Ore redstone = factory.createOrePopulator()
+                .ore((BlockState) Blocks.redstone_ore.getDefaultState())
+                .size(settings.redstoneSize)
+                .perChunk(settings.redstoneCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.redstoneMinHeight, settings.redstoneMaxHeight))
+                .build();
+        gensettings.getPopulators().add(redstone);
+
+        Ore diamond = factory.createOrePopulator()
+                .ore((BlockState) Blocks.diamond_ore.getDefaultState())
+                .size(settings.diamondSize)
+                .perChunk(settings.diamondCount)
+                .height(VariableAmount.baseWithRandomAddition(settings.diamondMinHeight, settings.diamondMaxHeight))
+                .build();
+        gensettings.getPopulators().add(diamond);
+
+        Ore lapis = factory.createOrePopulator()
+                .ore((BlockState) Blocks.lapis_ore.getDefaultState())
+                .size(settings.lapisSize)
+                .perChunk(settings.lapisCount)
+                .height(VariableAmount.baseWithVariance(settings.lapisCenterHeight, settings.lapisSpread))
+                .build();
+        gensettings.getPopulators().add(lapis);
+
+        if (theBiomeDecorator.sandPerChunk2 > 0) {
+            SeaFloor sand = factory.createSeaFloorPopulator()
+                    .block((BlockState) Blocks.sand.getDefaultState())
+                    .radius(VariableAmount.baseWithRandomAddition(2, 5))
+                    .depth(2)
+                    .perChunk(theBiomeDecorator.sandPerChunk2)
+                    .replace(WorldGenConstants.DIRT_OR_GRASS)
+                    .build();
+            gensettings.getPopulators().add(sand);
+        }
+        if (theBiomeDecorator.clayPerChunk > 0) {
+            SeaFloor clay = factory.createSeaFloorPopulator()
+                    .block((BlockState) Blocks.clay.getDefaultState())
+                    .radius(VariableAmount.baseWithRandomAddition(2, 2))
+                    .depth(1)
+                    .perChunk(theBiomeDecorator.clayPerChunk)
+                    .replace(WorldGenConstants.DIRT)
+                    .build();
+            gensettings.getPopulators().add(clay);
+        }
+        if (theBiomeDecorator.sandPerChunk > 0) {
+            SeaFloor gravelSeaFloor = factory.createSeaFloorPopulator()
+                    .block((BlockState) Blocks.gravel.getDefaultState())
+                    .radius(VariableAmount.baseWithRandomAddition(2, 4))
+                    .depth(2)
+                    .perChunk(theBiomeDecorator.sandPerChunk)
+                    .replace(WorldGenConstants.DIRT_OR_GRASS)
+                    .build();
+            gensettings.getPopulators().add(gravelSeaFloor);
+        }
+        Forest forest = factory.createForestPopulator()
+                .type(BiomeTreeTypes.OAK.getPopulatorObject(), 9)
+                .type(BiomeTreeTypes.OAK.getLargePopulatorObject().get(), 1)
+                .perChunk(VariableAmount.baseWithOptionalAddition(theBiomeDecorator.treesPerChunk, 1, 0.1))
+                .build();
+        gensettings.getPopulators().add(forest);
+
+        if (theBiomeDecorator.bigMushroomsPerChunk > 0) {
+            BigMushroom mushroom = factory.createBigMushroomPopulator()
+                    .mushroomsPerChunk(theBiomeDecorator.bigMushroomsPerChunk)
+                    .type(MushroomTypes.BROWN.getPopulatorObject(), 1)
+                    .type(MushroomTypes.RED.getPopulatorObject(), 1)
+                    .build();
+            gensettings.getPopulators().add(mushroom);
+        }
+        if (theBiomeDecorator.flowersPerChunk > 0) {
+            Flower flower = factory.createFlowerPopulator()
+                    .perChunk(theBiomeDecorator.flowersPerChunk * 64)
+                    .type(PlantTypes.DANDELION, 2)
+                    .type(PlantTypes.POPPY, 1)
+                    .build();
+            gensettings.getPopulators().add(flower);
+        }
+        if (theBiomeDecorator.grassPerChunk > 0) {
+            Shrub grass = factory.createShrubPopulator()
+                    .perChunk(theBiomeDecorator.grassPerChunk * 128)
+                    .type(ShrubTypes.TALL_GRASS, 1)
+                    .build();
+            gensettings.getPopulators().add(grass);
+        }
+        if (theBiomeDecorator.deadBushPerChunk > 0) {
+            DeadBush deadBush = factory.createDeadBushPopulator()
+                    .perChunk(theBiomeDecorator.deadBushPerChunk)
+                    .build();
+            gensettings.getPopulators().add(deadBush);
+        }
+        if (theBiomeDecorator.waterlilyPerChunk > 0) {
+            WaterLily waterLily = factory.createWaterLilyPopulator()
+                    .perChunk(theBiomeDecorator.waterlilyPerChunk * 10)
+                    .build();
+            gensettings.getPopulators().add(waterLily);
+        }
+        ChanceTable<MushroomType> types = new ChanceTable<MushroomType>();
+        types.add(new WeightedObject<MushroomType>(MushroomTypes.BROWN, 2));
+        types.add(new WeightedObject<MushroomType>(MushroomTypes.RED, 1));
+        types.add(new EmptyObject<>(5));
+        Mushroom smallMushroom = factory.createMushroomPopulator()
+                .types(types)
+                .mushroomsPerChunk(theBiomeDecorator.mushroomsPerChunk + 1)
+                .build();
+        gensettings.getPopulators().add(smallMushroom);
+        Reed reed = factory.createReedPopulator()
+                .perChunk(theBiomeDecorator.reedsPerChunk + 10)
+                .reedHeight(VariableAmount.baseWithRandomAddition(2, VariableAmount.baseWithRandomAddition(1, 3)))
+                .build();
+        gensettings.getPopulators().add(reed);
+        Pumpkin pumpkin = factory.createPumpkinPopulator()
+                .perChunk(64)
+                .chance(1 / 32d)
+                .build();
+        gensettings.getPopulators().add(pumpkin);
+        if (theBiomeDecorator.cactiPerChunk > 0) {
+            int n = theBiomeDecorator.cactiPerChunk / 10;
+            if (n <= 0) {
+                n++;
+            }
+            Cactus cactus = factory.createCactusPopulator()
+                    .cactiPerChunk(VariableAmount.baseWithOptionalAddition(0, VariableAmount.baseWithRandomAddition(1, VariableAmount.baseWithOptionalAddition(2, 3, 0.3)), 0.8))
+                    .build();
+            gensettings.getPopulators().add(cactus);
+        }
+        if (theBiomeDecorator.generateLakes) {
+            RandomBlock water = factory.createRandomBlockPopulator()
+                    .block((BlockState) Blocks.flowing_water.getDefaultState())
+                    .height(VariableAmount.baseWithRandomAddition(0, VariableAmount.baseWithRandomAddition(8, 248)))
+                    .perChunk(50)
+                    .placementTarget(RandomBlockPopulator.CAVE_LIQUIDS)
+                    .build();
+            gensettings.getPopulators().add(water);
+            RandomBlock lava = factory.createRandomBlockPopulator()
+                    .block((BlockState) Blocks.flowing_lava.getDefaultState())
+                    .height(VariableAmount.baseWithRandomAddition(0, VariableAmount.baseWithRandomAddition(8, VariableAmount.baseWithRandomAddition(8, 240))))
+                    .perChunk(20)
+                    .placementTarget(RandomBlockPopulator.CAVE_LIQUIDS)
+                    .build();
+            gensettings.getPopulators().add(lava);
+        }
+
+    }
 
     @Override
     public String getName() {
@@ -60,20 +346,4 @@ public abstract class MixinBiomeGenBase implements BiomeType {
     public double getHumidity() {
         return this.rainfall;
     }
-
-    @Override
-    public float getMinHeight() {
-        return this.minHeight;
-    }
-
-    @Override
-    public float getMaxHeight() {
-        return this.maxHeight;
-    }
-
-    @Override
-    public List<Populator> getPopulators() {
-        return this.populators;
-    }
-
 }

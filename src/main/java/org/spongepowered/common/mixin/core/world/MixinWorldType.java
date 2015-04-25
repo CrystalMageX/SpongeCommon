@@ -25,6 +25,7 @@
 package org.spongepowered.common.mixin.core.world;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.nbt.NBTException;
 import net.minecraft.nbt.NBTTagCompound;
@@ -44,7 +45,9 @@ import org.spongepowered.api.data.MemoryDataContainer;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.api.world.GeneratorType;
 import org.spongepowered.api.world.World;
-import org.spongepowered.api.world.gen.GeneratorPopulator;
+import org.spongepowered.api.world.biome.BiomeGenerationSettings;
+import org.spongepowered.api.world.biome.BiomeType;
+import org.spongepowered.api.world.gen.GenerationPopulator;
 import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.api.world.gen.WorldGenerator;
 import org.spongepowered.asm.mixin.Mixin;
@@ -52,7 +55,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.interfaces.IMixinWorldType;
 import org.spongepowered.common.service.persistence.NbtTranslator;
 import org.spongepowered.common.world.gen.SpongeBiomeGenerator;
-import org.spongepowered.common.world.gen.SpongeGeneratorPopulator;
+import org.spongepowered.common.world.gen.SpongeGenerationPopulator;
 import org.spongepowered.common.world.gen.SpongeWorldGenerator;
 
 import java.util.Optional;
@@ -127,11 +130,12 @@ public abstract class MixinWorldType implements GeneratorType, IMixinWorldType {
         IChunkProvider chunkProvider = this.getChunkGenerator(mcWorld, settings);
         WorldChunkManager chunkManager = this.getChunkManager(mcWorld);
 
-        return new SpongeWorldGenerator(
+        return new SpongeWorldGenerator((net.minecraft.world.World) world,
                 SpongeBiomeGenerator.of(chunkManager),
-                SpongeGeneratorPopulator.of((WorldServer) world, chunkProvider),
-                ImmutableList.<GeneratorPopulator> of(),
-                ImmutableList.<Populator> of());
+                SpongeGenerationPopulator.of((WorldServer) world, chunkProvider),
+                ImmutableList.<GenerationPopulator> of(),
+                ImmutableList.<Populator> of(),
+                Maps.<BiomeType, BiomeGenerationSettings>newHashMap());
     }
 
     public WorldChunkManager getChunkManager(net.minecraft.world.World world) {

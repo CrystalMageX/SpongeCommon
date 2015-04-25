@@ -22,6 +22,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/*
+` * This file is part of Sponge, licensed under the MIT License (MIT).
+ *
+ * Copyright (c) SpongePowered <https://www.spongepowered.org>
+ * Copyright (c) contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package org.spongepowered.common.registry;
 
 import org.spongepowered.api.block.BlockSnapshot;
@@ -105,6 +129,8 @@ import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.difficulty.Difficulty;
 import org.spongepowered.api.world.explosion.Explosion;
 import org.spongepowered.api.world.gen.PopulatorType;
+import org.spongepowered.api.world.gen.type.BiomeTreeType;
+import org.spongepowered.api.world.gen.type.MushroomType;
 import org.spongepowered.api.world.weather.Weather;
 import org.spongepowered.common.SpongeImpl;
 import org.spongepowered.common.block.SpongeBlockSnapshotBuilder;
@@ -126,6 +152,7 @@ import org.spongepowered.common.registry.type.ArgumentRegistryModule;
 import org.spongepowered.common.registry.type.ArtRegistryModule;
 import org.spongepowered.common.registry.type.BannerPatternShapeRegistryModule;
 import org.spongepowered.common.registry.type.BigMushroomRegistryModule;
+import org.spongepowered.common.registry.type.BiomeTreeTypeRegistryModule;
 import org.spongepowered.common.registry.type.BiomeTypeRegistryModule;
 import org.spongepowered.common.registry.type.BlockTypeRegistryModule;
 import org.spongepowered.common.registry.type.BrickTypeRegistryModule;
@@ -155,6 +182,7 @@ import org.spongepowered.common.registry.type.GoldenAppleRegistryModule;
 import org.spongepowered.common.registry.type.HingeRegistryModule;
 import org.spongepowered.common.registry.type.ItemTypeRegistryModule;
 import org.spongepowered.common.registry.type.LogAxisRegistryModule;
+import org.spongepowered.common.registry.type.MushroomTypeRegistryModule;
 import org.spongepowered.common.registry.type.NotePitchRegistryModule;
 import org.spongepowered.common.registry.type.ObjectiveDisplayModeRegistryModule;
 import org.spongepowered.common.registry.type.ParticleRegistryModule;
@@ -264,6 +292,7 @@ public final class CommonModuleRegistry {
             .registerModule(BannerPatternShape.class, new BannerPatternShapeRegistryModule())
             .registerModule(BooleanTrait.class, BooleanTraitRegistryModule.getInstance())
             .registerModule(BigMushroomType.class, new BigMushroomRegistryModule())
+            .registerModule(BiomeTreeType.class, new BiomeTreeTypeRegistryModule())
             .registerModule(BiomeType.class, new BiomeTypeRegistryModule())
             .registerModule(BlockType.class, BlockTypeRegistryModule.getInstance())
             .registerModule(BrickType.class, new BrickTypeRegistryModule())
@@ -296,6 +325,7 @@ public final class CommonModuleRegistry {
             .registerModule(IntegerTrait.class, IntegerTraitRegistryModule.getInstance())
             .registerModule(ItemType.class, ItemTypeRegistryModule.getInstance())
             .registerModule(LogAxis.class, new LogAxisRegistryModule())
+            .registerModule(MushroomType.class, new MushroomTypeRegistryModule())
             .registerModule(NotePitch.class, new NotePitchRegistryModule())
             .registerModule(ObjectiveDisplayMode.class, new ObjectiveDisplayModeRegistryModule())
             .registerModule(ParticleType.class, new ParticleRegistryModule())

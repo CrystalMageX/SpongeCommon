@@ -158,7 +158,7 @@ public class SpongeConfig<T extends SpongeConfig.ConfigBase> {
                 Files.createFile(path);
             }
 
-            this.loader = HoconConfigurationLoader.builder().setPath(path).build();
+            this.loader = HoconConfigurationLoader.builder().setFile(path.toFile()).build();
             if (type == Type.GLOBAL) {
                 this.configName = "GLOBAL";
             } else {

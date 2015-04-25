@@ -28,19 +28,28 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import net.minecraft.world.World;
+import org.spongepowered.api.world.biome.BiomeGenerationSettings;
+import org.spongepowered.api.world.biome.BiomeType;
 import org.spongepowered.api.world.gen.BiomeGenerator;
-import org.spongepowered.api.world.gen.GeneratorPopulator;
+import org.spongepowered.api.world.gen.GenerationPopulator;
 import org.spongepowered.api.world.gen.Populator;
 import org.spongepowered.api.world.gen.WorldGenerator;
+import org.spongepowered.common.interfaces.gen.IBiomeGenBase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of {@link WorldGenerator}.
  */
 public final class SpongeWorldGenerator implements WorldGenerator {
 
+    private final World world;
     /**
      * Holds the populators. May be mutable or immutable, but must be changed to
      * be mutable before the first call to {@link #getPopulators()}.
@@ -49,33 +58,37 @@ public final class SpongeWorldGenerator implements WorldGenerator {
     /**
      * Holds the generator populators. May be mutable or immutable, but must be
      * changed to be mutable before the first call to
-     * {@link #getGeneratorPopulators()}.
+     * {@link #getGenerationPopulators()}.
      */
-    private List<GeneratorPopulator> generatorPopulators;
+    private List<GenerationPopulator> generationPopulators;
+    private Map<BiomeType, BiomeGenerationSettings> biomeSettings;
     private BiomeGenerator biomeGenerator;
-    private GeneratorPopulator baseGenerator;
+    private GenerationPopulator baseGenerator;
 
     private boolean biomeGeneratorChanged;
     private boolean baseGeneratorChanged;
+    
 
-    public SpongeWorldGenerator(BiomeGenerator biomeGenerator, GeneratorPopulator baseGenerator,
-            List<GeneratorPopulator> generatorPopulators, List<Populator> populators) {
+    public SpongeWorldGenerator(World world, BiomeGenerator biomeGenerator, GenerationPopulator baseGenerator,
+            List<GenerationPopulator> generationPopulators, List<Populator> populators, Map<BiomeType, BiomeGenerationSettings> biomeOverrides) {
+        this.world = world;
         this.biomeGenerator = checkNotNull(biomeGenerator, "biomeGenerator");
         this.baseGenerator = checkNotNull(baseGenerator, "baseGenerator");
 
         // Note that ImmutableList.copyOf returns actually the list itself if it
         // is already immutable
         this.populators = ImmutableList.copyOf(populators);
-        this.generatorPopulators = ImmutableList.copyOf(generatorPopulators);
+        this.generationPopulators = ImmutableList.copyOf(generationPopulators);
+        this.biomeSettings = ImmutableMap.copyOf(biomeOverrides);
     }
 
     @Override
-    public List<GeneratorPopulator> getGeneratorPopulators() {
-        if (!(this.generatorPopulators instanceof ArrayList)) {
+    public List<GenerationPopulator> getGenerationPopulators() {
+        if (!(this.generationPopulators instanceof ArrayList)) {
             // Need to make a copy to make the populators mutable
-            this.generatorPopulators = new ArrayList<>(this.generatorPopulators);
+            this.generationPopulators = new ArrayList<>(this.generationPopulators);
         }
-        return this.generatorPopulators;
+        return this.generationPopulators;
     }
 
     @Override
@@ -102,12 +115,12 @@ public final class SpongeWorldGenerator implements WorldGenerator {
     }
 
     @Override
-    public GeneratorPopulator getBaseGeneratorPopulator() {
+    public GenerationPopulator getBaseGenerationPopulator() {
         return this.baseGenerator;
     }
 
     @Override
-    public void setBaseGeneratorPopulator(GeneratorPopulator generator) {
+    public void setBaseGenerationPopulator(GenerationPopulator generator) {
         checkState(!this.baseGeneratorChanged,
                 "Another plugin already set the base generator to " + this.biomeGenerator.getClass().getName());
 
@@ -115,4 +128,33 @@ public final class SpongeWorldGenerator implements WorldGenerator {
         this.baseGeneratorChanged = true;
     }
 
+    @Override
+    public BiomeGenerationSettings getBiomeSettings(BiomeType type) {
+        checkNotNull(type);
+        if (!this.biomeSettings.containsKey(type)) {
+            if (!(this.biomeSettings instanceof HashMap)) {
+                this.biomeSettings = new HashMap<BiomeType, BiomeGenerationSettings>(this.biomeSettings);
+            }
+            this.biomeSettings.put(type, ((IBiomeGenBase) type).initPopulators(this.world));
+        }
+        return this.biomeSettings.get(type);
+    }
+
+    public Map<BiomeType, BiomeGenerationSettings> getBiomeSettings() {
+        return ImmutableMap.copyOf(this.biomeSettings);
+    }
+
+    @Override
+    public List<GenerationPopulator> getGenerationPopulators(Class<? extends GenerationPopulator> type) {
+        return this.generationPopulators.stream().filter((p) -> {
+            return type.isAssignableFrom(p.getClass());
+        }).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Populator> getPopulators(Class<? extends Populator> type) {
+        return this.populators.stream().filter((p) -> {
+            return type.isAssignableFrom(p.getClass());
+        }).collect(Collectors.toList());
+    }
 }

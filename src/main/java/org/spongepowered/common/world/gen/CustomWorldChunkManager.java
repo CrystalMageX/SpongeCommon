@@ -108,8 +108,8 @@ public final class CustomWorldChunkManager extends WorldChunkManager {
         }
 
         // Transform to normal scale
-        int xStartBlock = xStart * 4;
-        int zStartBlock = zStart * 4;
+        int xStartBlock = (xStart + 2) * 4;
+        int zStartBlock = (zStart + 2) * 4;
         int xSizeBlock = xSize * 4;
         int zSizeBlock = zSize * 4;
 

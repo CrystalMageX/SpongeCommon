@@ -73,6 +73,7 @@ import org.spongepowered.common.util.graph.DirectedGraph;
 import org.spongepowered.common.util.graph.TopologicalOrder;
 import org.spongepowered.common.world.extent.SpongeExtentBufferFactory;
 import org.spongepowered.common.world.gen.WorldGeneratorRegistry;
+import org.spongepowered.common.world.gen.builders.SpongePopulatorFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -340,7 +341,7 @@ public class SpongeGameRegistry implements GameRegistry {
 
     @Override
     public PopulatorFactory getPopulatorFactory() {
-        throw new UnsupportedOperationException(); // TODO
+        return SpongePopulatorFactory.getInstance();
     }
 
     @Override

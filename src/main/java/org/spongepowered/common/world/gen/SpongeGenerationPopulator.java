@@ -35,33 +35,36 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import org.spongepowered.api.block.BlockState;
 import org.spongepowered.api.world.extent.ImmutableBiomeArea;
 import org.spongepowered.api.world.extent.MutableBlockVolume;
-import org.spongepowered.api.world.gen.GeneratorPopulator;
+import org.spongepowered.api.world.gen.GenerationPopulator;
 
 /**
  * Generator populator that wraps a Minecraft {@link IChunkProvider}.
  */
-public final class SpongeGeneratorPopulator implements GeneratorPopulator {
+public final class SpongeGenerationPopulator implements GenerationPopulator {
 
     private final IChunkProvider chunkGenerator;
     private final World world;
 
     /**
-     * Gets the {@link GeneratorPopulator} from the given {@link IChunkProvider}.
-     * If the chunk provider wraps a {@link GeneratorPopulator}, that
+     * Gets the {@link GenerationPopulator} from the given {@link IChunkProvider}.
+     * If the chunk provider wraps a {@link GenerationPopulator}, that
      * populator is returned, otherwise the chunk provider is wrapped.
      *
      * @param world The world the chunk generator is bound to.
      * @param chunkGenerator The chunk generator.
      * @return The generator populator.
      */
-    public static GeneratorPopulator of(World world, IChunkProvider chunkGenerator) {
-        if (chunkGenerator instanceof CustomChunkProviderGenerate) {
-            return ((CustomChunkProviderGenerate) chunkGenerator).getBaseGenerator();
-        }
-        return new SpongeGeneratorPopulator(world, chunkGenerator);
+	public static GenerationPopulator of(World world, IChunkProvider chunkGenerator) {
+		if (chunkGenerator instanceof GenerationPopulator) {
+			return (GenerationPopulator) chunkGenerator;
+		}
+		if (chunkGenerator instanceof SpongeChunkProvider) {
+			return ((SpongeChunkProvider) chunkGenerator).getBaseGenerationPopulator();
+		}
+		return new SpongeGenerationPopulator(world, chunkGenerator);
     }
 
-    private SpongeGeneratorPopulator(World world, IChunkProvider chunkGenerator) {
+    private SpongeGenerationPopulator(World world, IChunkProvider chunkGenerator) {
         this.world = checkNotNull(world, "world");
         this.chunkGenerator = checkNotNull(chunkGenerator, "chunkGenerator");
     }
@@ -109,8 +112,8 @@ public final class SpongeGeneratorPopulator implements GeneratorPopulator {
             }
 
             int yOffset = miniChunk.getYLocation();
-            int yInChunkStart = Math.max(yOffset, yStart);
-            int yInChunkEnd = Math.min(yOffset + 15, yEnd);
+            int yInChunkStart = Math.max(0, yStart);
+            int yInChunkEnd = Math.min(15, yEnd);
             for (int xInChunk = xInChunkStart; xInChunk <= xInChunkEnd; xInChunk++) {
                 for (int yInChunk = yInChunkStart; yInChunk <= yInChunkEnd; yInChunk++) {
                     for (int zInChunk = zInChunkStart; zInChunk <= zInChunkEnd; zInChunk++) {
@@ -129,9 +132,9 @@ public final class SpongeGeneratorPopulator implements GeneratorPopulator {
      * @param targetWorld The target world.
      * @return The chunk provider.
      * @throws IllegalArgumentException If the target world is not the world
-     *         this chunk provider is bound to.
+     *         this chunk provider is bound to.`
      */
-    IChunkProvider getHandle(World targetWorld) {
+    public IChunkProvider getHandle(World targetWorld) {
         if (!this.world.equals(targetWorld)) {
             throw new IllegalArgumentException("Cannot reassign internal generator from world "
                 + getWorldName(this.world) + " to world " + getWorldName(targetWorld));
