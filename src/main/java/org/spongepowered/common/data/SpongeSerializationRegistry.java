@@ -72,6 +72,7 @@ import org.spongepowered.api.data.manipulator.immutable.block.ImmutableGrowthDat
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutableHingeData;
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutableInWallData;
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutableLayeredData;
+import org.spongepowered.api.data.manipulator.immutable.block.ImmutableMoistureData;
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutableOccupiedData;
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutableOpenData;
 import org.spongepowered.api.data.manipulator.immutable.block.ImmutablePistonData;
@@ -167,6 +168,7 @@ import org.spongepowered.api.data.manipulator.mutable.block.GrowthData;
 import org.spongepowered.api.data.manipulator.mutable.block.HingeData;
 import org.spongepowered.api.data.manipulator.mutable.block.InWallData;
 import org.spongepowered.api.data.manipulator.mutable.block.LayeredData;
+import org.spongepowered.api.data.manipulator.mutable.block.MoistureData;
 import org.spongepowered.api.data.manipulator.mutable.block.OccupiedData;
 import org.spongepowered.api.data.manipulator.mutable.block.OpenData;
 import org.spongepowered.api.data.manipulator.mutable.block.PistonData;
@@ -325,6 +327,7 @@ import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSponge
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongeLayeredData;
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongeOccupiedData;
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongeOpenData;
+import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongeMoistureData;
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongePistonData;
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongePlantData;
 import org.spongepowered.common.data.manipulator.immutable.block.ImmutableSpongePortionData;
@@ -419,6 +422,7 @@ import org.spongepowered.common.data.manipulator.mutable.block.SpongeInWallData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongeLayeredData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongeOccupiedData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongeOpenData;
+import org.spongepowered.common.data.manipulator.mutable.block.SpongeMoistureData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongePistonData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongePlantData;
 import org.spongepowered.common.data.manipulator.mutable.block.SpongePortionData;
@@ -512,6 +516,7 @@ import org.spongepowered.common.data.processor.data.block.InWallDataProcessor;
 import org.spongepowered.common.data.processor.data.block.LayeredDataProcessor;
 import org.spongepowered.common.data.processor.data.block.OccupiedDataProcessor;
 import org.spongepowered.common.data.processor.data.block.OpenDataProcessor;
+import org.spongepowered.common.data.processor.data.block.MoistureDataProcessor;
 import org.spongepowered.common.data.processor.data.block.PistonDataProcessor;
 import org.spongepowered.common.data.processor.data.block.PlantDataProcessor;
 import org.spongepowered.common.data.processor.data.block.PortionDataProcessor;
@@ -610,6 +615,7 @@ import org.spongepowered.common.data.processor.value.block.InWallValueProcessor;
 import org.spongepowered.common.data.processor.value.block.LayerValueProcessor;
 import org.spongepowered.common.data.processor.value.block.OccupiedValueProcessor;
 import org.spongepowered.common.data.processor.value.block.OpenValueProcessor;
+import org.spongepowered.common.data.processor.value.block.MoistureValueProcessor;
 import org.spongepowered.common.data.processor.value.block.PistonTypeValueProcessor;
 import org.spongepowered.common.data.processor.value.block.PlantTypeValueProcessor;
 import org.spongepowered.common.data.processor.value.block.PortionTypeValueProcessor;
@@ -1174,6 +1180,10 @@ public class SpongeSerializationRegistry {
         dataRegistry.registerDataProcessorAndImpl(MinecartBlockData.class, SpongeMinecartBlockData.class,
                 ImmutableMinecartBlockData.class, ImmutableSpongeMinecartBlockData.class, minecartBlockDataProcessor);
 
+        final MoistureDataProcessor moistureDataProcessor = new MoistureDataProcessor();
+        dataRegistry.registerDataProcessorAndImpl(MoistureData.class, SpongeMoistureData.class,
+                ImmutableMoistureData.class, ImmutableSpongeMoistureData.class, moistureDataProcessor);
+
         // Values
         dataRegistry.registerValueProcessor(Keys.HEALTH, new HealthValueProcessor());
         dataRegistry.registerValueProcessor(Keys.MAX_HEALTH, new MaxHealthValueProcessor());
@@ -1300,6 +1310,7 @@ public class SpongeSerializationRegistry {
         dataRegistry.registerValueProcessor(Keys.IN_WALL, new InWallValueProcessor());
         dataRegistry.registerValueProcessor(Keys.AXIS, new AxisValueProcessor());
         dataRegistry.registerValueProcessor(Keys.DELAY, new DelayValueProcessor());
+        dataRegistry.registerValueProcessor(Keys.MOISTURE, new MoistureValueProcessor());
 
         // Properties
         final PropertyRegistry propertyRegistry = SpongePropertyRegistry.getInstance();

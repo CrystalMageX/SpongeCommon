@@ -237,6 +237,7 @@ public class KeyRegistry {
         keyMap.put("decayable", makeSingleKey(Boolean.class, Value.class, of("Decayable")));
         keyMap.put("in_wall", makeSingleKey(Boolean.class, Value.class, of("InWall")));
         keyMap.put("delay", makeSingleKey(Integer.class, MutableBoundedValue.class, of("Delay")));
+        keyMap.put("moisture", makeSingleKey(Integer.class, MutableBoundedValue.class, of("Moisture")));
     }
 
     private static Map<String, Key<?>> getKeyMap() {
