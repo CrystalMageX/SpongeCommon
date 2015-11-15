@@ -26,6 +26,7 @@ package org.spongepowered.common.data.processor.value.block;
 
 import org.spongepowered.api.data.key.Keys;
 import org.spongepowered.api.data.value.mutable.MutableBoundedValue;
+import org.spongepowered.common.data.processor.common.AbstractBlockOnlyValueProcessor;
 import org.spongepowered.common.data.value.SpongeValueBuilder;
 
 public class MoistureValueProcessor extends AbstractBlockOnlyValueProcessor<Integer, MutableBoundedValue<Integer>> {
