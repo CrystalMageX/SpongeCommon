@@ -116,6 +116,7 @@ import org.spongepowered.common.item.SpongeItemStackBuilder;
 import org.spongepowered.common.item.merchant.SpongeTradeOfferBuilder;
 import org.spongepowered.common.potion.SpongePotionBuilder;
 import org.spongepowered.common.registry.factory.MessageSinkFactoryModule;
+import org.spongepowered.common.registry.factory.PlayerSimulatorFactoryModule;
 import org.spongepowered.common.registry.factory.ResourcePackFactoryModule;
 import org.spongepowered.common.registry.factory.SelectorFactoryModule;
 import org.spongepowered.common.registry.factory.TextFactoryModule;
@@ -215,6 +216,7 @@ public final class CommonModuleRegistry {
         factoryRegistries.add(new SelectorFactoryModule());
         factoryRegistries.add(new TextFactoryModule());
         factoryRegistries.add(new TimingsFactoryModule());
+        factoryRegistries.add(new PlayerSimulatorFactoryModule());
 
         try {
             Field modifierField = Field.class.getDeclaredField("modifiers");
