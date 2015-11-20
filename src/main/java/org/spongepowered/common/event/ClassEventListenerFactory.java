@@ -44,6 +44,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.spongepowered.api.event.Event;
+import org.spongepowered.common.event.gen.DefineableClassLoader;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public final class ClassEventListenerFactory implements AnnotatedEventListener.Factory {
 
     private final AtomicInteger id = new AtomicInteger();
-    private final LocalClassLoader classLoader = new LocalClassLoader(getClass().getClassLoader());
+    private final DefineableClassLoader classLoader = new DefineableClassLoader(getClass().getClassLoader());
     private final LoadingCache<Method, Class<? extends AnnotatedEventListener>> cache = CacheBuilder.newBuilder()
             .concurrencyLevel(1)
             .weakValues()
@@ -82,7 +83,7 @@ public final class ClassEventListenerFactory implements AnnotatedEventListener.F
         Class<?> handle = method.getDeclaringClass();
         Class<?> eventClass = method.getParameterTypes()[0];
         String name = this.targetPackage
-                + eventClass.getSimpleName() + "Listener_" +  handle.getSimpleName() + '_' + method.getName()
+                + eventClass.getSimpleName() + "Listener_" + handle.getSimpleName() + '_' + method.getName()
                 + this.id.incrementAndGet();
         return this.classLoader.defineClass(name, generateClass(name, handle, method, eventClass));
     }
@@ -127,19 +128,6 @@ public final class ClassEventListenerFactory implements AnnotatedEventListener.F
         cw.visitEnd();
 
         return cw.toByteArray();
-    }
-
-    private static class LocalClassLoader extends ClassLoader {
-
-        private LocalClassLoader(ClassLoader parent) {
-            super(parent);
-        }
-
-        @SuppressWarnings("unchecked")
-        private <T> Class<T> defineClass(String name, byte[] b) {
-            return (Class<T>) defineClass(name, b, 0, b.length);
-        }
-
     }
 
 }

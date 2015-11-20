@@ -43,6 +43,7 @@ import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.plugin.PluginManager;
 import org.spongepowered.api.service.event.EventManager;
 import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.event.filter.FilterFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -62,7 +63,7 @@ public class SpongeEventManager implements EventManager {
     private final Object lock = new Object();
 
     private final PluginManager pluginManager;
-    private final AnnotatedEventListener.Factory handlerFactory = new ClassEventListenerFactory("org.spongepowered.common.event.listener");
+    private final AnnotatedEventListener.Factory handlerFactory = new InvokeEventListenerFactory(new FilterFactory("org.spongepowered.common.event.filters"));//new ClassEventListenerFactory("org.spongepowered.common.event.listener");
     private final Multimap<Class<?>, RegisteredListener<?>> handlersByEvent = HashMultimap.create();
 
     /**
@@ -108,7 +109,7 @@ public class SpongeEventManager implements EventManager {
         }
 
         Class<?>[] parameters = method.getParameterTypes();
-        return parameters.length == 1 && Event.class.isAssignableFrom(parameters[0]);
+        return parameters.length >= 1 && Event.class.isAssignableFrom(parameters[0]);
     }
 
     private void register(RegisteredListener<?> handler) {

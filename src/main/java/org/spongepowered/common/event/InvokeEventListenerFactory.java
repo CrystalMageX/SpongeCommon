@@ -26,29 +26,58 @@ package org.spongepowered.common.event;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.spongepowered.api.event.Event;
-
 import java.lang.reflect.Method;
+
+import org.spongepowered.api.event.Event;
+import org.spongepowered.common.Sponge;
+import org.spongepowered.common.event.filter.EventFilter;
+import org.spongepowered.common.event.filter.FilterFactory;
 
 public final class InvokeEventListenerFactory implements AnnotatedEventListener.Factory {
 
+    private FilterFactory filterFactory;
+
+    public InvokeEventListenerFactory(FilterFactory factory) {
+        this.filterFactory = factory;
+    }
+
     @Override
     public AnnotatedEventListener create(Object handle, Method method) throws Exception {
-        return new InvokeEventHandler(handle, method);
+        return new InvokeEventHandler(handle, method, this.filterFactory.createFilter(method));
     }
 
     private static class InvokeEventHandler extends AnnotatedEventListener {
 
         private final Method method;
+        private final EventFilter filter;
 
-        private InvokeEventHandler(Object handle, Method method) {
+        private InvokeEventHandler(Object handle, Method method, EventFilter filter) {
             super(handle);
             this.method = checkNotNull(method, "method");
+            this.filter = filter;
+            Sponge.getLogger().info("Creating event handler for " + method.toGenericString());
+            Sponge.getLogger().info("Filter: " + (this.filter != null ? this.filter.getClass().getName() : "null"));
+            if (this.filter == null && method.getParameterCount() != 1) {
+                // basic sanity check
+                throw new IllegalStateException("Failed to generate EventFilter for non trivial filtering operation.");
+            }
         }
 
         @Override
         public void handle(Event event) throws Exception {
-            this.method.invoke(this.handle, event);
+            if (this.filter != null) {
+                Object[] filtered = this.filter.filter(event);
+                if (filtered != null) {
+                    StringBuilder args = new StringBuilder();
+                    for (Object o : filtered) {
+                        args.append(o.getClass().getName()).append(" ");
+                    }
+                    Sponge.getLogger().info("Invoking " + this.method.toGenericString() + " with arguments " + args.toString());
+                    this.method.invoke(this.handle, filtered);
+                }
+            } else {
+                this.method.invoke(this.handle, event);
+            }
         }
 
     }
