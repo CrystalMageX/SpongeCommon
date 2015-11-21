@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.spongepowered.api.plugin.PluginContainer;
 import org.spongepowered.api.service.config.ConfigDir;
 import org.spongepowered.api.service.config.DefaultConfig;
-import org.spongepowered.common.plugin.SpongePluginContainer;
 import org.spongepowered.common.service.config.SpongeConfigService;
 
 import java.io.File;
@@ -47,10 +46,10 @@ import javax.inject.Inject;
  */
 public class SpongePluginGuiceModule extends AbstractModule {
 
-    private final SpongePluginContainer container;
+    private final PluginContainer container;
     private final Class<?> pluginClass;
 
-    public SpongePluginGuiceModule(SpongePluginContainer container, Class<?> pluginClass) {
+    public SpongePluginGuiceModule(PluginContainer container, Class<?> pluginClass) {
         this.container = container;
         this.pluginClass = pluginClass;
     }

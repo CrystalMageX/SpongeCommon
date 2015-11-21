@@ -28,36 +28,27 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.dedicated.DedicatedServer;
-import org.apache.logging.log4j.spi.AbstractLogger;
-import org.slf4j.Logger;
-import org.slf4j.impl.SLF4JLogger;
 import org.spongepowered.api.Platform;
-import org.spongepowered.api.data.property.PropertyRegistry;
 import org.spongepowered.api.service.ProviderExistsException;
 import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.command.SimpleCommandService;
 import org.spongepowered.api.service.config.ConfigService;
 import org.spongepowered.api.service.pagination.PaginationService;
 import org.spongepowered.api.service.permission.PermissionService;
-import org.spongepowered.api.service.persistence.SerializationManager;
 import org.spongepowered.api.service.profile.GameProfileResolver;
 import org.spongepowered.api.service.rcon.RconService;
-import org.spongepowered.api.service.scheduler.SchedulerService;
 import org.spongepowered.api.service.sql.SqlService;
 import org.spongepowered.api.service.user.UserStorage;
 import org.spongepowered.api.util.annotation.NonnullByDefault;
 import org.spongepowered.common.command.CommandSponge;
 import org.spongepowered.common.command.SpongeCommandDisambiguator;
 import org.spongepowered.common.command.SpongeHelpCommand;
-import org.spongepowered.common.data.property.SpongePropertyRegistry;
 import org.spongepowered.common.data.util.NbtDataUtil;
 import org.spongepowered.common.registry.type.world.DimensionRegistryModule;
 import org.spongepowered.common.service.config.SpongeConfigService;
 import org.spongepowered.common.service.pagination.SpongePaginationService;
-import org.spongepowered.common.service.persistence.SpongeSerializationManager;
 import org.spongepowered.common.service.profile.SpongeProfileResolver;
 import org.spongepowered.common.service.rcon.MinecraftRconService;
-import org.spongepowered.common.service.scheduler.SpongeScheduler;
 import org.spongepowered.common.service.sql.SqlServiceImpl;
 import org.spongepowered.common.service.user.SpongeUserStorage;
 import org.spongepowered.common.text.action.SpongeCallbackHolder;
@@ -73,11 +64,11 @@ import java.util.UUID;
  */
 @NonnullByDefault
 public final class SpongeBootstrap {
-    private static final Logger slf4jLogger = new SLF4JLogger((AbstractLogger) SpongeImpl.getLogger(), SpongeImpl.getLogger().getName());
 
     public static void initializeServices() {
-        SimpleCommandService commandService = new SimpleCommandService(SpongeImpl.getGame(), slf4jLogger,
-                                                                       new SpongeCommandDisambiguator(SpongeImpl.getGame()));
+        SimpleCommandService commandService = new SimpleCommandService(SpongeImpl.getGame(), SpongeImpl.getSlf4jLogger(),
+                new SpongeCommandDisambiguator(SpongeImpl.getGame()));
+
         if (registerService(CommandService.class, commandService)) {
             commandService.register(SpongeImpl.getPlugin(), CommandSponge.getCommand(), "sponge", "sp");
             commandService.register(SpongeImpl.getPlugin(), SpongeHelpCommand.create(), "help");
