@@ -72,7 +72,6 @@ public final class InvokeEventListenerFactory implements AnnotatedEventListener.
                     for (Object o : filtered) {
                         args.append(o.getClass().getName()).append(" ");
                     }
-                    Sponge.getLogger().info("Invoking " + this.method.toGenericString() + " with arguments " + args.toString());
                     this.method.invoke(this.handle, filtered);
                 }
             } else {
