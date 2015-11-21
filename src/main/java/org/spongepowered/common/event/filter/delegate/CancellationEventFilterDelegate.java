@@ -35,7 +35,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.spongepowered.api.event.Cancellable;
-import org.spongepowered.api.event.filter.EventTypeFilters.IsCancelled;
+import org.spongepowered.api.event.filter.IsCancelled;
 
 import java.lang.reflect.Method;
 

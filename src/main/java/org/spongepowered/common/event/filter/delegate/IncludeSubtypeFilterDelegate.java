@@ -32,7 +32,7 @@ import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.spongepowered.api.event.filter.EventTypeFilters.Include;
+import org.spongepowered.api.event.filter.type.Include;
 
 public class IncludeSubtypeFilterDelegate extends SubtypeFilterDelegate {
 

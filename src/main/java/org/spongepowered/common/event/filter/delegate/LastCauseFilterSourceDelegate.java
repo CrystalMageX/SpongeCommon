@@ -1,10 +1,3 @@
-package org.spongepowered.common.event.filter.delegate;
-
-import static org.objectweb.asm.Opcodes.ACONST_NULL;
-import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ARETURN;
-import static org.objectweb.asm.Opcodes.ASTORE;
-import static org.objectweb.asm.Opcodes.IFNE;
 /*
  * This file is part of Sponge, licensed under the MIT License (MIT).
  *
@@ -29,19 +22,26 @@ import static org.objectweb.asm.Opcodes.IFNE;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.spongepowered.common.event.filter.delegate;
+
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ASTORE;
+import static org.objectweb.asm.Opcodes.IFNE;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.spongepowered.api.event.filter.CauseFilters.Last;
+import org.spongepowered.api.event.filter.cause.Last;
 
 import java.lang.reflect.Parameter;
 
 public class LastCauseFilterSourceDelegate extends CauseFilterSourceDelegate {
 
     private final Last anno;
-    
+
     public LastCauseFilterSourceDelegate(Last anno) {
         this.anno = anno;
     }

@@ -37,7 +37,7 @@ import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.spongepowered.api.event.filter.CauseFilters.All;
+import org.spongepowered.api.event.filter.cause.All;
 
 import java.lang.reflect.Parameter;
 
