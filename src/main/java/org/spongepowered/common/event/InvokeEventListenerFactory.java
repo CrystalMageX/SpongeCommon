@@ -26,12 +26,11 @@ package org.spongepowered.common.event;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.lang.reflect.Method;
-
 import org.spongepowered.api.event.Event;
-import org.spongepowered.common.Sponge;
 import org.spongepowered.common.event.filter.EventFilter;
 import org.spongepowered.common.event.filter.FilterFactory;
+
+import java.lang.reflect.Method;
 
 public final class InvokeEventListenerFactory implements AnnotatedEventListener.Factory {
 
@@ -55,8 +54,6 @@ public final class InvokeEventListenerFactory implements AnnotatedEventListener.
             super(handle);
             this.method = checkNotNull(method, "method");
             this.filter = filter;
-            Sponge.getLogger().info("Creating event handler for " + method.toGenericString());
-            Sponge.getLogger().info("Filter: " + (this.filter != null ? this.filter.getClass().getName() : "null"));
             if (this.filter == null && method.getParameterCount() != 1) {
                 // basic sanity check
                 throw new IllegalStateException("Failed to generate EventFilter for non trivial filtering operation.");

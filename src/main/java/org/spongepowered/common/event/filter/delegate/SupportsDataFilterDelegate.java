@@ -24,14 +24,46 @@
  */
 package org.spongepowered.common.event.filter.delegate;
 
+import static org.objectweb.asm.Opcodes.ACONST_NULL;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.CHECKCAST;
+import static org.objectweb.asm.Opcodes.IFEQ;
+import static org.objectweb.asm.Opcodes.IFNE;
+import static org.objectweb.asm.Opcodes.INVOKEINTERFACE;
+
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+import org.spongepowered.api.event.filter.data.Supports;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
-public interface ParameterFilterDelegate {
+public class SupportsDataFilterDelegate implements ParameterFilterDelegate {
 
-    void write(ClassWriter cw, MethodVisitor mv, Method method, Parameter param, int localParam);
-    
+    private final Supports anno;
+
+    public SupportsDataFilterDelegate(Supports anno) {
+        this.anno = anno;
+    }
+
+    @Override
+    public void write(ClassWriter cw, MethodVisitor mv, Method method, Parameter param, int localParam) {
+        mv.visitVarInsn(ALOAD, localParam);
+        mv.visitTypeInsn(CHECKCAST, "org/spongepowered/api/data/DataHolder");
+        mv.visitLdcInsn(Type.getType(this.anno.value()));
+        mv.visitMethodInsn(INVOKEINTERFACE, "org/spongepowered/api/data/DataHolder", "supports", "(Ljava/lang/Class;)Z", true);
+        Label success = new Label();
+        if (this.anno.inverse()) {
+            mv.visitJumpInsn(IFEQ, success);
+        } else {
+            mv.visitJumpInsn(IFNE, success);
+        }
+        mv.visitInsn(ACONST_NULL);
+        mv.visitInsn(ARETURN);
+        mv.visitLabel(success);
+    }
+
 }

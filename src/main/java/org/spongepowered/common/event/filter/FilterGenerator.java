@@ -42,13 +42,12 @@ import static org.objectweb.asm.Opcodes.V1_6;
 import com.google.common.collect.Lists;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.Event;
-import org.spongepowered.api.event.cause.CauseTracked;
 import org.spongepowered.api.event.filter.IsCancelled;
 import org.spongepowered.api.event.filter.cause.All;
 import org.spongepowered.api.event.filter.cause.First;
 import org.spongepowered.api.event.filter.cause.Last;
+import org.spongepowered.api.event.filter.data.Has;
+import org.spongepowered.api.event.filter.data.Supports;
 import org.spongepowered.api.event.filter.type.Exclude;
 import org.spongepowered.api.event.filter.type.Include;
 import org.spongepowered.common.event.filter.delegate.AllCauseFilterSourceDelegate;
@@ -56,11 +55,13 @@ import org.spongepowered.common.event.filter.delegate.CancellationEventFilterDel
 import org.spongepowered.common.event.filter.delegate.ExcludeSubtypeFilterDelegate;
 import org.spongepowered.common.event.filter.delegate.FilterDelegate;
 import org.spongepowered.common.event.filter.delegate.FirstCauseFilterSourceDelegate;
+import org.spongepowered.common.event.filter.delegate.HasDataFilterDelegate;
 import org.spongepowered.common.event.filter.delegate.IncludeSubtypeFilterDelegate;
 import org.spongepowered.common.event.filter.delegate.LastCauseFilterSourceDelegate;
 import org.spongepowered.common.event.filter.delegate.ParameterFilterDelegate;
 import org.spongepowered.common.event.filter.delegate.ParameterFilterSourceDelegate;
 import org.spongepowered.common.event.filter.delegate.SubtypeFilterDelegate;
+import org.spongepowered.common.event.filter.delegate.SupportsDataFilterDelegate;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -162,7 +163,7 @@ public class FilterGenerator {
                     plocals[i - 1] = localState[1];
 
                     for (ParameterFilterDelegate paramFilter : paramFilters) {
-                        local = paramFilter.write(cw, mv, method, param, local);
+                        paramFilter.write(cw, mv, method, param, plocals[i - 1]);
                     }
                 } else {
                     if (paramFilters.isEmpty()) {
@@ -211,24 +212,6 @@ public class FilterGenerator {
         }
 
         return data;
-    }
-
-    @SuppressWarnings("unused")
-    private static class SecondaryFilter_EventTestPlugin_unfiltered0 implements EventFilter {
-
-        @Override
-        public Object[] filter(Event event) {
-            List<Player> param1 = ((CauseTracked) event).getCause().allOf(Player.class);
-            if (!param1.isEmpty()) {
-                return null;
-            }
-            return new Object[] {event, param1.toArray(new Player[0])};
-        }
-
-        public void invoke(Event e, Player[] p) {
-
-        }
-
     }
 
     private static Object filterFromAnnotation(Class<? extends Annotation> cls) {
@@ -334,6 +317,8 @@ public class FilterGenerator {
     }
 
     private static enum ParameterFilter {
+        SUPPORTS(Supports.class),
+        HAS(Has.class),
         ;
 
         private final Class<? extends Annotation> cls;
@@ -343,6 +328,12 @@ public class FilterGenerator {
         }
 
         public ParameterFilterDelegate getDelegate(Annotation anno) {
+            if (this == SUPPORTS) {
+                return new SupportsDataFilterDelegate((Supports) anno);
+            }
+            if (this == HAS) {
+                return new HasDataFilterDelegate((Has) anno);
+            }
             throw new UnsupportedOperationException();
         }
 
