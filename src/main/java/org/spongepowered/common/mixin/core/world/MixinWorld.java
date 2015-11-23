@@ -667,8 +667,8 @@ public abstract class MixinWorld implements World, IMixinWorld {
                 // Special case for Tameables
                 else if (!(entityIn instanceof EntityPlayer) && entityIn instanceof EntityTameable) {
                     EntityTameable tameable = (EntityTameable) entityIn;
-                    if (tameable.getOwnerEntity() != null) {
-                        specialCause = tameable.getOwnerEntity();
+                    if (tameable.getOwner() != null) {
+                        specialCause = tameable.getOwner();
                         causeName = NamedCause.OWNER;
                     }
                 }
@@ -766,8 +766,8 @@ public abstract class MixinWorld implements World, IMixinWorld {
                 Entity entity = cause.first(Entity.class).get();
                 if (entity instanceof EntityTameable) {
                     EntityTameable tameable = (EntityTameable) entity;
-                    if (tameable.getOwnerEntity() != null) {
-                        cause = cause.with(NamedCause.of(NamedCause.OWNER, tameable.getOwnerEntity()));
+                    if (tameable.getOwner() != null) {
+                        cause = cause.with(NamedCause.of(NamedCause.OWNER, tameable.getOwner()));
                     }
                 } else {
                     Optional<User> owner = ((IMixinEntity) entity).getTrackedPlayer(NbtDataUtil.SPONGE_ENTITY_CREATOR);
@@ -1877,7 +1877,7 @@ public abstract class MixinWorld implements World, IMixinWorld {
     @SuppressWarnings("unchecked")
     @Override
     public Iterable<Chunk> getLoadedChunks() {
-        return ((ChunkProviderServer) this.getChunkProvider()).loadedChunks;
+        return (Iterable<Chunk>) (Iterable) ((ChunkProviderServer) this.getChunkProvider()).loadedChunks;
     }
 
     @Override
@@ -2071,7 +2071,8 @@ public abstract class MixinWorld implements World, IMixinWorld {
 
     @SuppressWarnings("unchecked")
     private List<Player> getPlayers() {
-        return ((net.minecraft.world.World) (Object) this).getPlayers(Player.class, Predicates.alwaysTrue());
+        // TODO: Is this correct?
+        return (List) ((net.minecraft.world.World) (Object) this).getPlayers(EntityPlayer.class, Predicates.alwaysTrue());
     }
 
     @Override

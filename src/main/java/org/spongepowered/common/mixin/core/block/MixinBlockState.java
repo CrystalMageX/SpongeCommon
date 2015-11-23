@@ -87,7 +87,7 @@ public abstract class MixinBlockState extends BlockStateBase implements BlockSta
 
     @Override
     public BlockState withExtendedProperties(Location<World> location) {
-        return (BlockState) this.block.getActualState(this, (net.minecraft.world.World) location.getExtent(), VecHelper.toBlockPos(location.getBlockPosition())); 
+        return (BlockState) this.block.getActualState(this, (net.minecraft.world.World) location.getExtent(), VecHelper.toBlockPos(location.getBlockPosition()));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -382,13 +382,13 @@ public abstract class MixinBlockState extends BlockStateBase implements BlockSta
     @SuppressWarnings("unchecked")
     @Override
     public ImmutableMap<BlockTrait<?>, ?> getTraitMap() {
-        return getProperties();
+        return (ImmutableMap) getProperties();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public Collection<BlockTrait<?>> getTraits() {
-        return getProperties().keySet();
+        return (Collection) getProperties().keySet();
     }
 
     @Override

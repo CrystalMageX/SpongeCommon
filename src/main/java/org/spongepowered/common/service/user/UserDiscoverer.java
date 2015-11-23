@@ -132,7 +132,7 @@ class UserDiscoverer {
 
         // Add all banned users
         UserListBans banList = MinecraftServer.getServer().getConfigurationManager().getBannedPlayers();
-        for (BanEntry entry : (Collection<BanEntry>) banList.getValues().values()) {
+        for (BanEntry entry : (Collection<BanEntry>) (Collection) banList.getValues().values()) {
             if (entry instanceof UserListBansEntry) {
                 profiles.add((org.spongepowered.api.GameProfile) entry.value);
             }
