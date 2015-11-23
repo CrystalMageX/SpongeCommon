@@ -112,8 +112,9 @@ public abstract class MixinScoreboardSaveData extends WorldSavedData implements 
     }
 
     @SuppressWarnings("rawtypes")
-    @Inject(method = "scoresToNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Score;isLocked()Z"), locals = LocalCapture.CAPTURE_FAILHARD)
-    public void onScoresToNbt(CallbackInfoReturnable<NBTTagList> cir, NBTTagList nbttaglist, Collection collection, Iterator iterator, Score score, NBTTagCompound nbttagcompound) {
+    @Inject(method = "scoresToNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/scoreboard/Score;isLocked()Z"),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    public void onScoresToNbt(CallbackInfoReturnable<NBTTagList> cir, NBTTagList nbttaglist, Score score, NBTTagCompound nbttagcompound) {
         SpongeScore spongeScore = ((IMixinScore) score).getSpongeScore();
         if (spongeScore.getObjectives().size() > 1) {
             nbttagcompound.setLong(SPONGE_SCORE_UUID_MOST, spongeScore.getUuid().getMostSignificantBits());
