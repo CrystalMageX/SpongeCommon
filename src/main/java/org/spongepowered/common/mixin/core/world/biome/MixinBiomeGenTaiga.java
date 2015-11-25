@@ -59,7 +59,7 @@ public abstract class MixinBiomeGenTaiga extends MixinBiomeGenBase {
     @Shadow private int field_150644_aH; // type
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         if (this.field_150644_aH == 1 || this.field_150644_aH == 2) {
             BlockBlob blob = factory.createBlockBlockPopulator()
@@ -130,5 +130,6 @@ public abstract class MixinBiomeGenTaiga extends MixinBiomeGenBase {
             forest.type(BiomeTreeTypes.TALL_TAIGA.getPopulatorObject(), 2);
         }
         gensettings.getPopulators().add(0, forest.build());
+        System.out.println("Taiga " + gensettings.getPopulators().get(0).toString());
     }
 }

@@ -1,7 +1,7 @@
 /*
  * This file is part of Sponge, licensed under the MIT License (MIT).
  *
- * Copyright (c) SpongePowered <https://www.spongepowered.org>
+ * Copyright (c) SpongePowered.org <http://www.spongepowered.org>
  * Copyright (c) contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,34 +25,22 @@
 package org.spongepowered.common.mixin.core.world.biome;
 
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeDecorator;
+import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.biome.BiomeGenMutated;
-import net.minecraft.world.biome.BiomeGenSwamp;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.util.weighted.VariableAmount;
-import org.spongepowered.api.world.gen.PopulatorFactory;
-import org.spongepowered.api.world.gen.populator.Forest;
-import org.spongepowered.api.world.gen.type.BiomeTreeTypes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.common.interfaces.gen.IBiomeGenBase;
 import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
 
-@Mixin(BiomeGenSwamp.class)
-public abstract class MixinBiomeGenSwamp extends MixinBiomeGenBase {
+@Mixin(BiomeGenMutated.class)
+public abstract class MixinBiomeGenMutated extends MixinBiomeGenBase {
+
+    @Shadow public BiomeGenBase baseBiome;
 
     @Override
     public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
-//        gensettings.getGenerationPopulators().add(new SwampLilyPopulator());
-        super.buildPopulators(world, gensettings);
-        BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;
-        if (BiomeGenMutated.class.isAssignableFrom(this.getClass())) {
-            theBiomeDecorator = ((BiomeGenMutated) (Object) this).baseBiome.theBiomeDecorator;
-        }
-        gensettings.getPopulators().removeAll(gensettings.getPopulators(Forest.class));
-        PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
-        Forest.Builder forest = factory.createForestPopulator();
-        forest.perChunk(VariableAmount.baseWithOptionalAddition(theBiomeDecorator.treesPerChunk, 1, 0.1));
-        forest.type(BiomeTreeTypes.SWAMP.getPopulatorObject(), 1);
-        gensettings.getPopulators().add(0, forest.build());
+        //Delegate to the wrapped biome
+        ((IBiomeGenBase) this.baseBiome).buildPopulators(world, gensettings);
     }
 
 }

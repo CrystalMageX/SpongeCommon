@@ -98,14 +98,15 @@ public abstract class MixinBiomeGenBase implements BiomeType, IBiomeGenBase {
         gensettings.getGenerationPopulators().clear();
         gensettings.getGroundCoverLayers().clear();
         buildPopulators(world, gensettings);
-//        System.out.println("Initialized " + getName());
-//        for (Populator pop : gensettings.getPopulators()) {
-//            System.out.println("\t" + pop.toString());
-//        }
+        System.out.println("Initialized " + getName());
+        for (Populator pop : gensettings.getPopulators()) {
+            System.out.println("\t" + pop.toString());
+        }
         return gensettings;
     }
 
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    @Override
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;
         if (BiomeGenMutated.class.isAssignableFrom(this.getClass())) {
             theBiomeDecorator = ((BiomeGenMutated) (Object) this).baseBiome.theBiomeDecorator;
@@ -309,7 +310,7 @@ public abstract class MixinBiomeGenBase implements BiomeType, IBiomeGenBase {
                 n++;
             }
             Cactus cactus = factory.createCactusPopulator()
-                    .cactiPerChunk(VariableAmount.baseWithOptionalAddition(0, VariableAmount.baseWithRandomAddition(1, VariableAmount.baseWithOptionalAddition(2, 3, 0.3)), 0.8))
+                    .cactiPerChunk(VariableAmount.baseWithOptionalAddition(0, VariableAmount.baseWithRandomAddition(1, VariableAmount.baseWithOptionalAddition(2, 3, 0.5)), 0.8))
                     .build();
             gensettings.getPopulators().add(cactus);
         }

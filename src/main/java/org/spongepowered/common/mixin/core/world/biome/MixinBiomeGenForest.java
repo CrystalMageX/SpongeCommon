@@ -46,7 +46,7 @@ public abstract class MixinBiomeGenForest extends MixinBiomeGenBase {
     @Shadow private int field_150632_aF;
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;
         if (BiomeGenMutated.class.isAssignableFrom(this.getClass())) {

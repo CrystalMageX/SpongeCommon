@@ -53,7 +53,7 @@ public abstract class MixinBiomeGenJungle extends MixinBiomeGenBase {
     @Shadow private boolean field_150614_aC;
     
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         super.buildPopulators(world, gensettings);
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;

@@ -33,6 +33,6 @@ import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
 public abstract class MixinBiomeGenHell extends MixinBiomeGenBase {
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
     }
 }

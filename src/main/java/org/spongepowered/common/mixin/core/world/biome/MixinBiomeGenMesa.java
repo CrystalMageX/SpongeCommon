@@ -52,7 +52,7 @@ public abstract class MixinBiomeGenMesa extends MixinBiomeGenBase {
     @Shadow private boolean field_150620_aI; // More trees
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         gensettings.getGenerationPopulators().add(new MesaBiomeGenerationPopulator(this.field_150626_aH, this.field_150620_aI));
         super.buildPopulators(world, gensettings);
         BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;

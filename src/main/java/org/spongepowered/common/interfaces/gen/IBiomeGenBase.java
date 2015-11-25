@@ -26,9 +26,12 @@ package org.spongepowered.common.interfaces.gen;
 
 import net.minecraft.world.World;
 import org.spongepowered.api.world.biome.BiomeGenerationSettings;
+import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
 
 public interface IBiomeGenBase {
 
     BiomeGenerationSettings initPopulators(World world);
-    
+
+    void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings);
+
 }

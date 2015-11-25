@@ -42,7 +42,7 @@ import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
 public abstract class MixinBiomeGenSavanna extends MixinBiomeGenBase {
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         DoublePlant grass = factory.createDoublePlantPopulator()
                 .type(DoublePlantTypes.GRASS, 1)

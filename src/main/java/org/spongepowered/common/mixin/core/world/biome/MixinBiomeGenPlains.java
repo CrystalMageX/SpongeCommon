@@ -42,7 +42,7 @@ public abstract class MixinBiomeGenPlains extends MixinBiomeGenBase implements I
     @Shadow protected boolean field_150628_aC;
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         gensettings.getPopulators().add(new PlainsGrassPopulator(this.field_150628_aC, factory));
         BiomeDecorator theBiomeDecorator = this.theBiomeDecorator;

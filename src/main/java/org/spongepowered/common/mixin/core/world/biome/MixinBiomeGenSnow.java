@@ -45,7 +45,7 @@ public abstract class MixinBiomeGenSnow extends MixinBiomeGenBase {
     @Shadow private boolean field_150615_aC;
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         if (this.field_150615_aC) {
             IceSpike spike = factory.createIceSpikePopulator()
@@ -65,7 +65,7 @@ public abstract class MixinBiomeGenSnow extends MixinBiomeGenBase {
         }
         gensettings.getPopulators().removeAll(gensettings.getPopulators(Forest.class));
         Forest.Builder forest = factory.createForestPopulator();
-        forest.perChunk(VariableAmount.baseWithOptionalAddition(theBiomeDecorator.treesPerChunk, 1, 0.1));
+        forest.perChunk(VariableAmount.baseWithOptionalAddition(theBiomeDecorator.treesPerChunk, 2, 0.1));
         forest.type(BiomeTreeTypes.TALL_TAIGA.getPopulatorObject(), 1);
         gensettings.getPopulators().add(0, forest.build());
     }

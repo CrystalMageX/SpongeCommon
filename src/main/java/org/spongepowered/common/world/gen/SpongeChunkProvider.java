@@ -261,11 +261,11 @@ public class SpongeChunkProvider implements WorldGenerator, IChunkProvider {
         org.spongepowered.api.world.Chunk chunk = (org.spongepowered.api.world.Chunk) this.world.getChunkFromChunkCoords(chunkX, chunkZ);
 
 //        System.out.println("Got Chunk " + chunkX + " " + chunkZ);
-        List<Populator> populators = Lists.newArrayList(this.pop);
         if (!this.biomeSettings.containsKey(biome)) {
             this.biomeSettings.put(biome, ((IBiomeGenBase) biome).initPopulators(this.world));
         }
-        populators.addAll(this.biomeSettings.get(biome).getPopulators());
+        List<Populator> populators = Lists.newArrayList(this.biomeSettings.get(biome).getPopulators());
+        populators.addAll(this.pop);//Non-biome populators come after the biome populators
         Sponge.getGame().getEventManager().post(SpongeEventFactory.createPopulateChunkEventPre(Sponge.getGame(), Cause.empty(), populators, chunk));
 
 //        System.out.println("Posted event " + chunkX + " " + chunkZ);

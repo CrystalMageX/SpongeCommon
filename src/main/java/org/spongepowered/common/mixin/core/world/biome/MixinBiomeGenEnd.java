@@ -43,7 +43,7 @@ public abstract class MixinBiomeGenEnd extends MixinBiomeGenBase {
      * generation with end stone.
      */
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         gensettings.getGenerationPopulators().add(new EndBiomeGenerationPopulator());
         PopulatorFactory factory = Sponge.getRegistry().getPopulatorFactory();
         EnderCrystalPlatform platform = factory.createEnderCrystalPlatformPopulator()

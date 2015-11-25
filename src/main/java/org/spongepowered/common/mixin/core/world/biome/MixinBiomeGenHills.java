@@ -55,7 +55,7 @@ public abstract class MixinBiomeGenHills extends MixinBiomeGenBase {
     @Shadow private int field_150638_aH;
 
     @Override
-    protected void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
+    public void buildPopulators(World world, SpongeBiomeGenerationSettings gensettings) {
         super.buildPopulators(world, gensettings);
         gensettings.getGroundCoverLayers().clear();
         gensettings.getGroundCoverLayers().add(new GroundCoverLayer((stoneNoise) -> {
