@@ -33,12 +33,19 @@ import org.spongepowered.api.data.type.PlantType;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
 import org.spongepowered.api.util.weighted.WeightedTable;
+import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.Flower;
 import org.spongepowered.api.world.gen.populator.Flower.Builder;
+
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 public class FlowersBuilder implements Flower.Builder {
 
 	private WeightedTable<PlantType> flowers;
+    private Function<Location<Chunk>, PlantType> override;
 	private VariableAmount count;
 
 	public FlowersBuilder() {
@@ -66,10 +73,17 @@ public class FlowersBuilder implements Flower.Builder {
         return this;
     }
 
+    @Override
+    public Builder supplier(@Nullable Function<Location<Chunk>, PlantType> override) {
+        this.override = override;
+        return this;
+    }
+
 	@Override
 	public Builder reset() {
 		this.flowers = new WeightedTable<>();
 		this.count = VariableAmount.fixed(2);
+        this.override = null;
 		return this;
 	}
 
@@ -80,6 +94,7 @@ public class FlowersBuilder implements Flower.Builder {
 		Flower populator = (Flower) new WorldGenFlowers(Blocks.yellow_flower, BlockFlower.EnumFlowerType.DANDELION);
 		populator.setFlowersPerChunk(this.count);
 		populator.getFlowerTypes().addAll(this.flowers);
+        populator.setSupplierOverride(this.override);
 		return populator;
 	}
 

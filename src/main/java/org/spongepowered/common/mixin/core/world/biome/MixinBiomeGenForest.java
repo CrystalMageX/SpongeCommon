@@ -30,14 +30,17 @@ import net.minecraft.world.biome.BiomeGenForest;
 import net.minecraft.world.biome.BiomeGenMutated;
 import org.spongepowered.api.Sponge;
 import org.spongepowered.api.data.type.DoublePlantTypes;
+import org.spongepowered.api.data.type.PlantTypes;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.world.gen.PopulatorFactory;
 import org.spongepowered.api.world.gen.populator.DoublePlant;
+import org.spongepowered.api.world.gen.populator.Flower;
 import org.spongepowered.api.world.gen.populator.Forest;
 import org.spongepowered.api.world.gen.type.BiomeTreeTypes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.common.world.biome.SpongeBiomeGenerationSettings;
+import org.spongepowered.common.world.gen.populators.FlowerForestSupplier;
 import org.spongepowered.common.world.gen.populators.RoofedForestPopulator;
 
 @Mixin(BiomeGenForest.class)
@@ -78,6 +81,14 @@ public abstract class MixinBiomeGenForest extends MixinBiomeGenBase {
                 forest.type(BiomeTreeTypes.BIRCH.getPopulatorObject(), 1);
             }
             gensettings.getPopulators().add(0, forest.build());
+        }
+        if(this.field_150632_aF == 1) {
+            gensettings.getPopulators().removeAll(gensettings.getPopulators(Flower.class));
+            Flower flower = factory.createFlowerPopulator()
+                    .perChunk(theBiomeDecorator.flowersPerChunk * 64)
+                    .supplier(new FlowerForestSupplier())
+                    .build();
+            gensettings.getPopulators().add(flower);
         }
     }
 }

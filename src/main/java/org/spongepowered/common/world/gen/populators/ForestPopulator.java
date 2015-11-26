@@ -30,16 +30,23 @@ import net.minecraft.util.BlockPos;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.PopulatorObject;
 import org.spongepowered.api.world.gen.populator.Forest;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 public class ForestPopulator implements Forest {
 
     private VariableAmount count;
     private WeightedTable<PopulatorObject> types;
+    private Function<Location<Chunk>, PopulatorObject> override = null;
 
     public ForestPopulator() {
         this.count = VariableAmount.fixed(10);
@@ -52,17 +59,25 @@ public class ForestPopulator implements Forest {
         int n = this.count.getFlooredAmount(random);
         int x, z;
         BlockPos pos;
+        
+        List<PopulatorObject> result;
+        PopulatorObject type;
         for (int i = 0; i < n; i++) {
-            List<PopulatorObject> treeTypes = this.types.get(random);
-            if (treeTypes.isEmpty()) {
-                continue;
-            }
-            PopulatorObject tree = treeTypes.get(0);
             x = random.nextInt(16) + 8;
             z = random.nextInt(16) + 8;
             pos = ((net.minecraft.world.World) chunk.getWorld()).getTopSolidOrLiquidBlock(new BlockPos(min.getX() + x, min.getY(), min.getZ() + z));
-            if (tree.canPlaceAt(chunk.getWorld(), pos.getX(), pos.getY(), pos.getZ())) {
-                tree.placeObject(chunk.getWorld(), random, pos.getX(), pos.getY(), pos.getZ());
+            if(this.override != null) {
+                Location<Chunk> pos2 = new Location<>(chunk, VecHelper.toVector(pos));
+                type = this.override.apply(pos2);
+            } else {
+                result = this.types.get(random);
+                if (result.isEmpty()) {
+                    continue;
+                }
+                type = result.get(0);
+            }
+            if (type.canPlaceAt(chunk.getWorld(), pos.getX(), pos.getY(), pos.getZ())) {
+                type.placeObject(chunk.getWorld(), random, pos.getX(), pos.getY(), pos.getZ());
             }
         }
     }
@@ -80,6 +95,16 @@ public class ForestPopulator implements Forest {
     @Override
     public WeightedTable<PopulatorObject> getTypes() {
         return this.types;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, PopulatorObject>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, PopulatorObject> override) {
+        this.override = override;
     }
     
     @Override

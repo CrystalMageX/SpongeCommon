@@ -32,13 +32,18 @@ import org.spongepowered.api.data.type.DoublePlantType;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
 import org.spongepowered.api.util.weighted.WeightedTable;
+import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.DoublePlant;
 import org.spongepowered.api.world.gen.populator.DoublePlant.Builder;
+
+import java.util.function.Function;
 
 
 public class DoublePlantBuilder implements DoublePlant.Builder {
     
     private WeightedTable<DoublePlantType> types;
+    private Function<Location<Chunk>, DoublePlantType> override;
     private VariableAmount count;
     
     public DoublePlantBuilder() {
@@ -67,9 +72,16 @@ public class DoublePlantBuilder implements DoublePlant.Builder {
     }
 
     @Override
+    public Builder supplier(Function<Location<Chunk>, DoublePlantType> override) {
+        this.override = override;
+        return this;
+    }
+
+    @Override
     public Builder reset() {
         this.types = new WeightedTable<>();
         this.count = VariableAmount.fixed(1);
+        this.override = null;
         return this;
     }
 
@@ -83,6 +95,7 @@ public class DoublePlantBuilder implements DoublePlant.Builder {
         DoublePlant populator = (DoublePlant) wgen;
         populator.getPossibleTypes().addAll(this.types);
         populator.setPlantsPerChunk(this.count);
+        populator.setSupplierOverride(this.override);
         return populator;
     }
 

@@ -31,13 +31,18 @@ import net.minecraft.world.gen.feature.WorldGenBigMushroom;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
 import org.spongepowered.api.util.weighted.WeightedTable;
+import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.PopulatorObject;
 import org.spongepowered.api.world.gen.populator.BigMushroom;
 import org.spongepowered.api.world.gen.populator.BigMushroom.Builder;
 
+import java.util.function.Function;
+
 public class BigMushroomBuilder implements BigMushroom.Builder {
 
     private WeightedTable<PopulatorObject> types;
+    private Function<Location<Chunk>, PopulatorObject> override;
     private VariableAmount count;
 
     public BigMushroomBuilder() {
@@ -66,9 +71,16 @@ public class BigMushroomBuilder implements BigMushroom.Builder {
     }
 
     @Override
+    public Builder supplier(Function<Location<Chunk>, PopulatorObject> override) {
+        this.override = override;
+        return this;
+    }
+
+    @Override
     public Builder reset() {
         this.types = new WeightedTable<>();
         this.count = VariableAmount.fixed(1);
+        this.override = null;
         return this;
     }
 
@@ -77,6 +89,7 @@ public class BigMushroomBuilder implements BigMushroom.Builder {
         BigMushroom populator = (BigMushroom) new WorldGenBigMushroom(1);
         populator.getTypes().addAll(this.types);
         populator.setMushroomsPerChunk(this.count);
+        populator.setSupplierOverride(this.override);
         return populator;
     }
 

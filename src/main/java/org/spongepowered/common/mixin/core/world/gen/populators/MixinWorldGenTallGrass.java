@@ -38,15 +38,21 @@ import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.Shrub;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 @Mixin(WorldGenTallGrass.class)
 public abstract class MixinWorldGenTallGrass extends WorldGenerator implements Shrub {
@@ -54,6 +60,7 @@ public abstract class MixinWorldGenTallGrass extends WorldGenerator implements S
     @Shadow private IBlockState tallGrassState;
 
     private WeightedTable<ShrubType> types;
+    private Function<Location<Chunk>, ShrubType> override = null;
     private VariableAmount count;
 
     @Inject(method = "<init>(Lnet/minecraft/block/BlockTallGrass$EnumType;)V", at = @At("RETURN") )
@@ -75,14 +82,20 @@ public abstract class MixinWorldGenTallGrass extends WorldGenerator implements S
         // divide the total count into batches of 128.
         int n = (int) Math.ceil(this.count.getFlooredAmount(random) / 128f);
         for (int i = 0; i < n; i++) {
-            result = this.types.get(random);
-            if (!result.isEmpty()) {
+            BlockPos pos = position.add(random.nextInt(16) + 8, 0, random.nextInt(16) + 8);
+            pos = world.getTopSolidOrLiquidBlock(pos).add(0, 1, 0);
+            if(this.override != null) {
+                Location<Chunk> pos2 = new Location<>(chunk, VecHelper.toVector(pos));
+                stype = this.override.apply(pos2);
+            } else {
+                result = this.types.get(random);
+                if (result.isEmpty()) {
+                    continue;
+                }
                 stype = result.get(0);
             }
             BlockTallGrass.EnumType type = (BlockTallGrass.EnumType) (Object) stype;
             this.tallGrassState = Blocks.tallgrass.getDefaultState().withProperty(BlockTallGrass.TYPE, type);
-            BlockPos pos = position.add(random.nextInt(16) + 8, 0, random.nextInt(16) + 8);
-            pos = world.getTopSolidOrLiquidBlock(pos).add(0, 1, 0);
             generate(world, random, pos);
         }
     }
@@ -100,6 +113,16 @@ public abstract class MixinWorldGenTallGrass extends WorldGenerator implements S
     @Override
     public void setShrubsPerChunk(VariableAmount count) {
         this.count = count;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, ShrubType>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, ShrubType> override) {
+        this.override = override;
     }
 
 }

@@ -36,6 +36,7 @@ import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.DoublePlant;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -43,14 +44,20 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 @Mixin(WorldGenDoublePlant.class)
 public class MixinWorldGenDoublePlant implements DoublePlant {
 
     private WeightedTable<DoublePlantType> types;
+    private Function<Location<Chunk>, DoublePlantType> override = null;
     private VariableAmount count;
 
     @Shadow private BlockDoublePlant.EnumPlantType field_150549_a;
@@ -66,16 +73,23 @@ public class MixinWorldGenDoublePlant implements DoublePlant {
         World world = (World) chunk.getWorld();
         Vector3i min = chunk.getBlockMin();
         BlockPos chunkPos = new BlockPos(min.getX(), min.getY(), min.getZ());
-        int x, z;
+        int x, y, z;
         int n = this.count.getFlooredAmount(random);
 
         for (int i = 0; i < n; ++i) {
             x = random.nextInt(16) + 8;
             z = random.nextInt(16) + 8;
-            generate(world, random, world.getHeight(chunkPos.add(x, 0, z)));
+            y = random.nextInt(world.getHeight(chunkPos.add(x, 0, z)).getY() + 32);
+            generate(world, random, world.getHeight(chunkPos.add(x, y, z)));
         }
     }
 
+    /*
+     * Author: Deamon
+     * 
+     * Purpose: Completely changes the method to leverage the
+     * WeightedTable types.
+     */
     @Overwrite
     public boolean generate(World worldIn, Random rand, BlockPos position) {
         boolean flag = false;
@@ -85,22 +99,25 @@ public class MixinWorldGenDoublePlant implements DoublePlant {
         }
         DoublePlantType type = DoublePlantTypes.GRASS;
         List<DoublePlantType> result;
-        for (int i = 0; i < 64; ++i) {
+        Chunk chunk = (Chunk) worldIn.getChunkFromBlockCoords(position);
+        for (int i = 0; i < 8; ++i) {
             BlockPos blockpos1 = position.add(rand.nextInt(8) - rand.nextInt(8), rand.nextInt(4) - rand.nextInt(4),
                     rand.nextInt(8) - rand.nextInt(8));
 
             if (worldIn.isAirBlock(blockpos1) && (!worldIn.provider.getHasNoSky() || blockpos1.getY() < 254)
                     && Blocks.double_plant.canPlaceBlockAt(worldIn, blockpos1)) {
-                // BEGIN sponge
-                // Blocks.double_plant.placeAt(worldIn, blockpos1,
-                // this.field_150549_a, 2);
-                result = this.types.get(rand);
-                if (!result.isEmpty()) {
+                if (this.override != null) {
+                    Location<Chunk> pos = new Location<>(chunk, VecHelper.toVector(blockpos1));
+                    type = this.override.apply(pos);
+                } else {
+                    result = this.types.get(rand);
+                    if (result.isEmpty()) {
+                        continue;
+                    }
                     type = result.get(0);
-                    Blocks.double_plant.placeAt(worldIn, position,
-                            (BlockDoublePlant.EnumPlantType) (Object) type, 2);
                 }
-                // END sponge
+                Blocks.double_plant.placeAt(worldIn, blockpos1,
+                        (BlockDoublePlant.EnumPlantType) (Object) type, 2);
                 flag = true;
             }
         }
@@ -121,6 +138,16 @@ public class MixinWorldGenDoublePlant implements DoublePlant {
     @Override
     public void setPlantsPerChunk(VariableAmount count) {
         this.count = count;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, DoublePlantType>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, DoublePlantType> override) {
+        this.override = override;
     }
 
 }

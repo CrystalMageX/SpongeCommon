@@ -33,6 +33,7 @@ import net.minecraft.world.gen.GeneratorBushFeature;
 import org.spongepowered.api.util.weighted.ChanceTable;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.Mushroom;
 import org.spongepowered.api.world.gen.type.MushroomType;
 import org.spongepowered.api.world.gen.type.MushroomTypes;
@@ -41,9 +42,14 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 @Mixin(GeneratorBushFeature.class)
 public abstract class MixinWorldGeneratorBushFeature implements Mushroom {
@@ -54,6 +60,7 @@ public abstract class MixinWorldGeneratorBushFeature implements Mushroom {
     public abstract boolean generate(World worldIn, Random rand, BlockPos position);
 
     private ChanceTable<MushroomType> types;
+    private Function<Location<Chunk>, MushroomType> override = null;
     private VariableAmount mushroomsPerChunk;
 
     @Inject(method = "<init>", at = @At("RETURN") )
@@ -73,19 +80,25 @@ public abstract class MixinWorldGeneratorBushFeature implements Mushroom {
         MushroomType type = MushroomTypes.BROWN;
         List<MushroomType> result;
         for (int i = 0; i < n; ++i) {
-            result = this.types.get(random);
-            if (result.isEmpty()) {
-                continue;
+            x = random.nextInt(16) + 8;
+            z = random.nextInt(16) + 8;
+            BlockPos height = world.getHeight(chunkPos.add(x, 0, z));
+            if(this.override != null) {
+                Location<Chunk> pos2 = new Location<>(chunk, VecHelper.toVector(height));
+                type = this.override.apply(pos2);
+            } else {
+                result = this.types.get(random);
+                if (result.isEmpty()) {
+                    continue;
+                }
+                type = result.get(0);
             }
-            type = result.get(0);
             if (type == MushroomTypes.BROWN) {
                 this.field_175908_a = Blocks.brown_mushroom;
             } else {
                 this.field_175908_a = Blocks.red_mushroom;
             }
-            x = random.nextInt(16) + 8;
-            z = random.nextInt(16) + 8;
-            generate(world, random, world.getHeight(chunkPos.add(x, 0, z)));
+            generate(world, random, height);
 
         }
     }
@@ -103,5 +116,15 @@ public abstract class MixinWorldGeneratorBushFeature implements Mushroom {
     @Override
     public void setMushroomsPerChunk(VariableAmount count) {
         this.mushroomsPerChunk = count;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, MushroomType>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, MushroomType> override) {
+        this.override = override;
     }
 }

@@ -26,22 +26,27 @@ package org.spongepowered.common.world.gen.populators;
 
 import net.minecraft.util.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.feature.WorldGenAbstractTree;
-import net.minecraft.world.gen.feature.WorldGenBigMushroom;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.PopulatorObject;
 import org.spongepowered.api.world.gen.populator.Forest;
 import org.spongepowered.api.world.gen.type.BiomeTreeTypes;
 import org.spongepowered.api.world.gen.type.MushroomTypes;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 public class RoofedForestPopulator implements Forest {
 
     private WeightedTable<PopulatorObject> trees = new WeightedTable<>();
+    private Function<Location<Chunk>, PopulatorObject> override = null;
 
     public RoofedForestPopulator() {
         this.trees.add(BiomeTreeTypes.CANOPY.getPopulatorObject(), 12.6);
@@ -58,17 +63,21 @@ public class RoofedForestPopulator implements Forest {
 
         List<PopulatorObject> results;
         PopulatorObject tree = BiomeTreeTypes.CANOPY.getPopulatorObject();
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                int k = i * 4 + 1 + 8 + random.nextInt(3);
-                int l = j * 4 + 1 + 8 + random.nextInt(3);
-                BlockPos blockpos1 = world.getTopSolidOrLiquidBlock(pos.add(k, 0, l));
-
-                results = this.trees.get(random);
-                if (results.isEmpty()) {
-                    continue;
+        for (int x = 0; x < 4; ++x) {
+            for (int z = 0; z < 4; ++z) {
+                int x0 = x * 4 + 1 + 8 + random.nextInt(3);
+                int z0 = z * 4 + 1 + 8 + random.nextInt(3);
+                BlockPos blockpos1 = world.getTopSolidOrLiquidBlock(pos.add(x0, 0, z0));
+                if (this.override != null) {
+                    Location<Chunk> pos2 = new Location<>(chunk, VecHelper.toVector(blockpos1));
+                    tree = this.override.apply(pos2);
+                } else {
+                    results = this.trees.get(random);
+                    if (results.isEmpty()) {
+                        continue;
+                    }
+                    tree = results.get(0);
                 }
-                tree = results.get(0);
                 if (tree.canPlaceAt(chunk.getWorld(), blockpos1.getX(), blockpos1.getY(), blockpos1.getZ())) {
                     tree.placeObject(chunk.getWorld(), random, blockpos1.getX(), blockpos1.getY(), blockpos1.getZ());
                 }
@@ -89,6 +98,16 @@ public class RoofedForestPopulator implements Forest {
     @Override
     public WeightedTable<PopulatorObject> getTypes() {
         return this.trees;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, PopulatorObject>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, PopulatorObject> override) {
+        this.override = override;
     }
 
 }

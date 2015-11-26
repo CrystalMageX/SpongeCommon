@@ -36,20 +36,27 @@ import org.spongepowered.api.data.type.PlantTypes;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedTable;
 import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.Flower;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.common.util.VecHelper;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
+import java.util.function.Function;
+
+import javax.annotation.Nullable;
 
 @Mixin(WorldGenFlowers.class)
 public abstract class MixinWorldGenFlowers extends WorldGenerator implements Flower {
 
     private WeightedTable<PlantType> flowers;
+    private Function<Location<Chunk>, PlantType> override = null;
     private VariableAmount count;
 
     @Shadow
@@ -81,8 +88,14 @@ public abstract class MixinWorldGenFlowers extends WorldGenerator implements Flo
             z = random.nextInt(16) + 8;
             y = random.nextInt(world.getHeight(chunkPos.add(x, 0, z)).getY() + 32);
             blockpos = chunkPos.add(x, y, z);
-            result = this.flowers.get(random);
-            if (!result.isEmpty()) {
+            if(this.override != null) {
+                Location<Chunk> pos = new Location<>(chunk, VecHelper.toVector(blockpos));
+                type = this.override.apply(pos);
+            } else {
+                result = this.flowers.get(random);
+                if (result.isEmpty()) {
+                    continue;
+                }
                 type = result.get(0);
             }
             BlockFlower.EnumFlowerType enumflowertype = (BlockFlower.EnumFlowerType) (Object) type;
@@ -108,6 +121,16 @@ public abstract class MixinWorldGenFlowers extends WorldGenerator implements Flo
     @Override
     public WeightedTable<PlantType> getFlowerTypes() {
         return this.flowers;
+    }
+
+    @Override
+    public Optional<Function<Location<Chunk>, PlantType>> getSupplierOverride() {
+        return Optional.ofNullable(this.override);
+    }
+
+    @Override
+    public void setSupplierOverride(@Nullable Function<Location<Chunk>, PlantType> override) {
+        this.override = override;
     }
 
 }

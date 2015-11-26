@@ -27,12 +27,10 @@ package org.spongepowered.common.world.gen.builders;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.gen.feature.WorldGenMinable;
 import org.spongepowered.api.block.BlockState;
-import org.spongepowered.api.block.BlockTypes;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.world.gen.populator.Ore;
 import org.spongepowered.api.world.gen.populator.Ore.Builder;

@@ -32,13 +32,18 @@ import net.minecraft.world.gen.GeneratorBushFeature;
 import org.spongepowered.api.util.weighted.ChanceTable;
 import org.spongepowered.api.util.weighted.VariableAmount;
 import org.spongepowered.api.util.weighted.WeightedObject;
+import org.spongepowered.api.world.Chunk;
+import org.spongepowered.api.world.Location;
 import org.spongepowered.api.world.gen.populator.Mushroom;
 import org.spongepowered.api.world.gen.populator.Mushroom.Builder;
 import org.spongepowered.api.world.gen.type.MushroomType;
 
+import java.util.function.Function;
+
 public class MushroomBuilder implements Mushroom.Builder {
 
     private ChanceTable<MushroomType> types;
+    private Function<Location<Chunk>, MushroomType> override;
     private VariableAmount count;
 
     public MushroomBuilder() {
@@ -67,9 +72,16 @@ public class MushroomBuilder implements Mushroom.Builder {
     }
 
     @Override
+    public Builder supplier(Function<Location<Chunk>, MushroomType> override) {
+        this.override = override;
+        return this;
+    }
+
+    @Override
     public Builder reset() {
         this.types = new ChanceTable<>();
         this.count = VariableAmount.fixed(1);
+        this.override = null;
         return this;
     }
 
@@ -78,6 +90,7 @@ public class MushroomBuilder implements Mushroom.Builder {
         Mushroom populator = (Mushroom) new GeneratorBushFeature(Blocks.brown_mushroom);
         populator.getType().addAll(this.types);
         populator.setMushroomsPerChunk(this.count);
+        populator.setSupplierOverride(this.override);
         return populator;
     }
 
